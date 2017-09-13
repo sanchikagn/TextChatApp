@@ -20,7 +20,7 @@
         <input name="message" id="text" type="text" />
         <input name="button" onclick="setText(getElementById('text').value)" type="button" value="Send" id="send"/>
         <br><br><br>
-        <input name="reply" id="messages" type="text" value=""/>
+        <textarea name="reply" id="messages" rows="4" cols="50"></textarea>
 
 </body>
 <script>
@@ -43,7 +43,7 @@
         console.log("Received");
         if(data.type === 'chat'){
             console.log('chat received',data.payload.message);
-            $('#messages').append('<br>' + data.payload.nick + ':<br>' + data.payload.message);
+            $('#messages').append('<br>Rcv: <br>' + data.payload.message + '&#10;');
         }
     });
 
@@ -51,7 +51,7 @@
     $('#send').click(function(){
         var msg = $('#text').val();
         webrtc.sendToAll('chat', {message: msg, nick: webrtc.config.nick});
-        $('#messages').append('<br>You:<br>' + msg);
+        $('#messages').append('<br>You: <br>' + msg + '&#10;');
         $('#text').val('');
     });
 </script>
