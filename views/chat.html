@@ -6,6 +6,11 @@
     <script type="text/javascript">
         function setText(UserMsg) {
             console.log(UserMsg);
+            return UserMsg;
+        }
+        function setUsername(Username) {
+            console.log(Username);
+            return Username;
         }
     </script>
     <meta charset="UTF-8">
@@ -13,10 +18,9 @@
 </head>
 <body>
         <h3>Portal Chat Room</h3>
+        <input name="name" id="name" type="text" />
+        <input name="change" onclick="setUsername(getElementById('name').value)" type="button" value="Change" id="change"/>
         <br><br>
-        <video height="300" id="localVideo"></video>
-        <div id="remoteVideos"></div>
-        <br><br><br>
         <input name="message" id="text" type="text" />
         <input name="button" onclick="setText(getElementById('text').value)" type="button" value="Send" id="send"/>
         <br><br><br>
@@ -54,6 +58,7 @@
     $('#send').click(function(){
         //Get the message from the text box with #text id
         var msg = $('#text').val();
+        webrtc.config.nick = $('#name').val();
         webrtc.sendToAll('chat', {message: msg, nick: webrtc.config.nick});
         $('#messages').append('<br>You: <br>' + msg + '&#10;');
         //Set the value of text box to null
