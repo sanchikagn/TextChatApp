@@ -1,3 +1,4 @@
+
 # TextChatApp
 A WebRTC one to one text chat application using simplewebrtc library
 
@@ -91,4 +92,3 @@ In chat.html:
             $('#messages').append('<br>You: <br>' + msg + '&#10;');
             $('#text').val('');
         });
-
