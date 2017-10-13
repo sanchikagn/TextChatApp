@@ -1,5 +1,5 @@
 {
-  "name": "untitled1",
+  "name": "TextChatApp",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -13,6 +13,6 @@
     "jade": "~1.11.0",
     "morgan": "~1.8.1",
     "serve-favicon": "~2.4.2",
-    "socket.io": "6.9.4"
+    "socket.io": "^2.0.3"
   }
 }
