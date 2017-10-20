@@ -9,7 +9,7 @@ var users = {};
 /* GET users listing. */
 router.get('/', function(req, res, next) {
 
-  log.debug(req);
+
     res.send(JSON.stringify(users));
 
 });
