@@ -48,7 +48,9 @@
 <script>
     var room = 'PortalChatRoom';
     var listCreated = false;
-    var user;
+    var sessionId;
+    var user = {};
+    var userCreated = false
     var webrtc = new SimpleWebRTC({
         // the id/element dom element that will hold "our" video
         localVideoEl: '',
@@ -65,7 +67,12 @@
         }
     });
     //webrtc.joinRoom(room);
-
+    if (room) {
+        //setRoom(room);
+        webrtc.joinRoom(room, function (err, res) {
+            console.log('joined', room, err, res);
+        });
+    }
     appendToList();
 
     //For Text Chat ------------------------------------------------------------------
@@ -86,6 +93,10 @@
             console.log("update_user")
             appendToList();
         }
+        if(data.type === 'remove_user'){
+            console.log("remove_user")
+            appendToList();
+        }
 
     });
     // Send a chat message
@@ -99,7 +110,7 @@
         //Set the value of text box to null
         //$('#text').val('');
 
-        if(user == null){
+        if(userCreated == false){
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
@@ -303,6 +314,27 @@
                         break;
                     case 'closed':
                         connstate.innerText = 'Connection closed.';
+                        console.log(user);
+
+                        //console.log(webrtc.getPeers(sessionId))
+//                        var xhttp = new XMLHttpRequest();
+//                        xhttp.onreadystatechange = function() {
+//                            if (this.readyState == 4 && this.status == 200) {
+//                                //document.getElementById("demo").innerHTML = this.responseText;
+//                                console.log(this.responseText);
+//                                user = JSON.parse(this.responseText);
+//                                console.log(user);
+//                                var names = JSON.parse(this.responseText)
+//                                appendToList();
+//                                console.log('remove_user')
+//                                webrtc.sendToAll('remove_user');
+//                            }
+//                        };
+//                        xhttp.open("POST", "/users/remove", true);
+//                        xhttp.setRequestHeader("Content-Type", "application/json");
+//                        //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+//                        xhttp.send(JSON.stringify(user));
+                        //console.log(')
 
                         // disable file sending
                         fileinput.disabled = 'disabled';
@@ -383,33 +415,37 @@
         $('body').addClass('active');
     }
 
-    if (room) {
-        //setRoom(room);
-        webrtc.joinRoom(room, function (err, res) {
-            console.log('joined', room, err, res);
-        });
-    } else {
-        $('form>button').attr('disabled', null);
-        $('form').submit(function () {
-            var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
-            webrtc.createRoom(val, function (err, name) {
-                console.log(' create room cb', arguments);
 
-                var newUrl = location.pathname + '?' + name;
-                if (!err) {
-                    history.replaceState({foo: 'bar'}, null, newUrl);
-                    setRoom(name);
-                } else {
-                    console.log(err);
-                }
-            });
-            return false;
-        });
-    }
+//    } else {
+//        $('form>button').attr('disabled', null);
+//        $('form').submit(function () {
+//            var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
+//            webrtc.createRoom(val, function (err, name) {
+//                console.log(' create room cb', arguments);
+//
+//                var newUrl = location.pathname + '?' + name;
+//                if (!err) {
+//                    history.replaceState({foo: 'bar'}, null, newUrl);
+//                    setRoom(name);
+//                } else {
+//                    console.log(err);
+//                }
+//            });
+//            return false;
+//        });
+//    }
 
     webrtc.on('leftRoom', function (roomName) {
-
+            console.log(roomName);
     });
+
+    webrtc.on('connectionReady', function (sessionId) {
+        // ...
+        sessionId = sessionId;
+        console.log(sessionId);
+
+    })
+    //webrtc.getPeers(sessionId, type)
 
 
 </script>

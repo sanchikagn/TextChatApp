@@ -1,7 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var Log = require('log')
-    , log = new Log('info');
+
 
 
 
@@ -35,6 +34,20 @@ router.post('/update', function(req, res, next) {
     var id = guid();
     var user = req.body;
     users[user.id] = user;
+    res.send(JSON.stringify(user));
+
+});
+router.post('/remove', function(req, res, next) {
+
+
+    var id = guid();
+    var user = req.body;
+    //users[user.id] = user;
+    console.log("remove")
+    console.log(user)
+    console.log(users[user.id])
+    //users.splice(user.id, 1);
+    delete users[user.id];
     res.send(JSON.stringify(user));
 
 });
