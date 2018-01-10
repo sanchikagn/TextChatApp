@@ -3,6 +3,10 @@
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://simplewebrtc.com/latest-v2.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
     <script type="text/javascript">
         function setText(UserMsg) {
             console.log(UserMsg);
@@ -16,7 +20,9 @@
     <meta charset="UTF-8">
     <title>TextChat</title>
 </head>
-<body>
+<body style="margin: 10px">
+<div class="row">
+    <div class="col-md-9">
         <h3>Portal Chat Room</h3>
         <input name="name" id="name" type="text" />
         <input name="change" onclick="setUsername(getElementById('name').value)" type="button" value="Change" id="change"/>
@@ -31,11 +37,22 @@
         <div id="remotes">
 
         </div>
+    </div>
+    <div class="col-md-3">
+        <ul data-role="listview"  id="list" data-theme="a">
+
+        </ul>
+    </div>
+</div>
 
 
 </body>
 <script>
     var room = 'PortalChatRoom';
+    var listCreated = false;
+    var sessionId;
+    var user = {};
+    var userCreated = false
     var webrtc = new SimpleWebRTC({
         // the id/element dom element that will hold "our" video
         localVideoEl: '',
@@ -52,8 +69,13 @@
         }
     });
     //webrtc.joinRoom(room);
-
-
+    if (room) {
+        //setRoom(room);
+        webrtc.joinRoom(room, function (err, res) {
+            console.log('joined', room, err, res);
+        });
+    }
+    appendToList();
 
     //For Text Chat ------------------------------------------------------------------
     // Await messages from others
@@ -67,6 +89,70 @@
             $('#messages').append('<br>' + data.payload.nick + ': <br>' + data.payload.message + '&#10;');
 
         }
+        if(data.type === 'add_user'){
+            console.log("add_user")
+            appendToList();
+        }
+        if(data.type === 'update_user'){
+            console.log("update_user")
+            appendToList();
+        }
+        if(data.type === 'remove_user'){
+            console.log("remove_user")
+            appendToList();
+        }
+
+    });
+    // Send a chat message
+    //When Send button (id is #send) is clicked
+    $('#change').click(function(){
+        //Get the message from the text box with #text id
+        //var msg = $('#name').val();
+        webrtc.config.nick = $('#name').val();
+        //webrtc.sendToAll('name', { nick: webrtc.config.nick});
+        //$('#messages').append('<br>You: <br>' + msg + '&#10;');
+        //Set the value of text box to null
+        //$('#text').val('');
+
+        if(userCreated == false){
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    //document.getElementById("demo").innerHTML = this.responseText;
+                    console.log(this.responseText);
+                    user = JSON.parse(this.responseText);
+                    console.log(user);
+                    var names = JSON.parse(this.responseText)
+                    appendToList();
+                    console.log('add_user')
+                    webrtc.sendToAll('add_user');
+                }
+            };
+            xhttp.open("POST", "/users/add", true);
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send(JSON.stringify({name:$('#name').val()}));
+        }
+        else {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    //document.getElementById("demo").innerHTML = this.responseText;
+                    console.log(this.responseText);
+                    user = JSON.parse(this.responseText);
+                    console.log(user);
+                    var names = JSON.parse(this.responseText)
+                    appendToList();
+                    console.log('add_user')
+                    webrtc.sendToAll('update_user');
+                }
+            };
+            xhttp.open("POST", "/users/update", true);
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send(JSON.stringify({id:user.id,name:$('#name').val()}));
+        }
+
     });
 
     // Send a chat message
@@ -83,7 +169,39 @@
         $('#text').val('');
     });
 
+    function appendToList(){
 
+        if(!listCreated){
+            $("#items").append("<ul id='list' data-role='listview' data-inset='true'></ul>");
+            listCreated = true;
+            $("#items").trigger("create");
+        }
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                var users = JSON.parse(this.responseText)
+                console.log(users);
+                chatList(users);
+            }
+        };
+        xhttp.open("GET", "/users", true);
+        xhttp.send();
+
+
+
+    }
+
+    function chatList(users){
+        $('#list').empty();
+        $.each(users, function(i, user) {
+            console.log(JSON.stringify(user));
+            var name = JSON.stringify(user.name);
+            $('#list').append('<li>'+name+'</li>');
+        });
+
+    }
 
 
 
@@ -202,6 +320,27 @@
                         break;
                     case 'closed':
                         connstate.innerText = 'Connection closed.';
+                        console.log(user);
+
+                        //console.log(webrtc.getPeers(sessionId))
+//                        var xhttp = new XMLHttpRequest();
+//                        xhttp.onreadystatechange = function() {
+//                            if (this.readyState == 4 && this.status == 200) {
+//                                //document.getElementById("demo").innerHTML = this.responseText;
+//                                console.log(this.responseText);
+//                                user = JSON.parse(this.responseText);
+//                                console.log(user);
+//                                var names = JSON.parse(this.responseText)
+//                                appendToList();
+//                                console.log('remove_user')
+//                                webrtc.sendToAll('remove_user');
+//                            }
+//                        };
+//                        xhttp.open("POST", "/users/remove", true);
+//                        xhttp.setRequestHeader("Content-Type", "application/json");
+//                        //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+//                        xhttp.send(JSON.stringify(user));
+                        //console.log(')
 
                         // disable file sending
                         fileinput.disabled = 'disabled';
@@ -282,31 +421,37 @@
         $('body').addClass('active');
     }
 
-    if (room) {
-        //setRoom(room);
-        webrtc.joinRoom(room, function (err, res) {
-            console.log('joined', room, err, res);
-        });
-    } else {
-        $('form>button').attr('disabled', null);
-        $('form').submit(function () {
-            var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
-            webrtc.createRoom(val, function (err, name) {
-                console.log(' create room cb', arguments);
 
-                var newUrl = location.pathname + '?' + name;
-                if (!err) {
-                    history.replaceState({foo: 'bar'}, null, newUrl);
-                    setRoom(name);
-                } else {
-                    console.log(err);
-                }
-            });
-            return false;
-        });
-    }
+//    } else {
+//        $('form>button').attr('disabled', null);
+//        $('form').submit(function () {
+//            var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
+//            webrtc.createRoom(val, function (err, name) {
+//                console.log(' create room cb', arguments);
+//
+//                var newUrl = location.pathname + '?' + name;
+//                if (!err) {
+//                    history.replaceState({foo: 'bar'}, null, newUrl);
+//                    setRoom(name);
+//                } else {
+//                    console.log(err);
+//                }
+//            });
+//            return false;
+//        });
+//    }
 
+    webrtc.on('leftRoom', function (roomName) {
+            console.log(roomName);
+    });
 
+    webrtc.on('connectionReady', function (sessionId) {
+        // ...
+        sessionId = sessionId;
+        console.log(sessionId);
+
+    })
+    //webrtc.getPeers(sessionId, type)
 
 
 </script>
