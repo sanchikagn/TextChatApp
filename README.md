@@ -5,11 +5,11 @@ A WebRTC one to one text chat application using simplewebrtc library
 Getting Started
 1. To get the Node.js Express server running locally (for initial connection establishment): Run the project by executing 'npm start' inside the project location.
 2. To install any dependency module, 'npm install <module_name>' within the node_modules directory, and update package.jsin with name and version of it.
-3. Request the chat feature by 'https://localhost:8080/cam' in the browser.
+3. Request the chat feature by 'http://localhost:8080/cam' in the browser.
 
 Features
 1. Peer-to-Peer connection.
-2. HTTPS connection between the members.
+2. HTTP connection between the members. This can be enabled with a secure connection (i.e. HTTPS) too.
 
 Application Structure
 
