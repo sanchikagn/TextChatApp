@@ -1,5 +1,5 @@
 
-# TextChatApp
+# text-chat-app
 A WebRTC one to one text chat application using simplewebrtc library
 
 Getting Started
